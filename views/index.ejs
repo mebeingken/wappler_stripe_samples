@@ -1,34 +1,8 @@
-<!-- Wappler include head-page="layouts/main" fontawesome_5="cdn" bootstrap5="local" is="dmx-app" id="index" appConnect="local" components="{dmxStripe:{},dmxNotifications:{}}" -->
-<dmx-notifications id="notifies1"></dmx-notifications>
-<dmx-stripe id="stripe1" key="ENTER_PUBLISHABLE_KEY" dmx-bind:line-items="" checkout="server">
-</dmx-stripe>
-<div class="container">
-    <form id="form_purchase" is="dmx-stripe-checkout-form" method="post" action="/api/checkout" success-url="/thankyou" dmx-on:error="notifies1.warning(error)">
-        <div class="mb-3">
+<!-- Wappler include head-page="layouts/main" fontawesome_5="cdn" bootstrap5="local" is="dmx-app" id="index" appConnect="local" components="{dmxStripe:{},dmxNotifications:{},dmxFormatter:{}}" -->
+<h1>Shopping</h1>
+<input id="inp_qty" name="inp_qty" type="text" class="form-control">
 
-        </div>
-        <div class="row">
-            <div class="col-12 col-md-8 col-lg-7 col-xl-5 text-start">
-                <div class="row">
-                    <div class="col">
-                        <h1>Purchase</h1>
-                        <p class="text-h3">Enter your details below.</p>
-                    </div>
-                </div>
+<button id="btn1" class="btn btn-primary" dmx-on:click="cart.upsert({sku: 'my_cool_product'},{qty: `qty + inp_qty.value.toNumber()`, sku: 'my_cool_product', product_name: 'My Cool Product'})">Add item to cart</button>
 
-                <div class="row">
-                    <div class="col">
-                        <dmx-stripe-payment-method id="input1" payment-methods="card" display="tabs"></dmx-stripe-payment-method>
-                    </div>
-                </div>
-                <div class="row mt-4">
-                    <div class="col">
-                        <button id="form_purchase.submit" class="btn btn-primary" type="submit">Buy now&nbsp;<span class="spinner-border spinner-border-sm" role="status" dmx-show="processing"></span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </form>
-</div>
+
 <meta name="ac:route" content="/">

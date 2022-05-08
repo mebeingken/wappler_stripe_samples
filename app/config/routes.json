@@ -10,6 +10,11 @@
       "path": "/thankyou",
       "page": "thankyou",
       "layout": "main"
+    },
+    {
+      "path": "/checkout",
+      "page": "checkout",
+      "layout": "main"
     }
   ]
 }

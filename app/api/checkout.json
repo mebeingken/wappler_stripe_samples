@@ -3,11 +3,16 @@
     "$_POST": [
       {
         "type": "array",
+        "options": {
+          "rules": {
+            "core:required": {}
+          }
+        },
         "name": "lineItems",
         "sub": [
           {
             "type": "text",
-            "name": "price"
+            "name": "stock_id"
           },
           {
             "type": "text",
@@ -22,24 +27,150 @@
       {
         "name": "",
         "options": {
-          "comment": "The amount below can obviously be set via query lookup, etc."
-        }
-      },
-      {
-        "name": "",
-        "options": {
           "comment": "Amounts with stripe are zero-decimal, so 100 equals $1.00"
         }
       },
       {
-        "name": "amount",
+        "name": "total_amount_init",
         "module": "core",
         "action": "setvalue",
         "options": {
-          "value": 500
+          "key": "total_amount",
+          "value": "0"
         },
         "meta": [],
-        "outputType": "text"
+        "outputType": "number",
+        "output": false
+      },
+      {
+        "name": "each_sku",
+        "module": "core",
+        "action": "repeat",
+        "options": {
+          "repeat": "{{$_POST.lineItems}}",
+          "outputFields": [],
+          "exec": {
+            "steps": [
+              {
+                "name": "product",
+                "module": "dbconnector",
+                "action": "single",
+                "options": {
+                  "connection": "scratch",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "products",
+                        "column": "amount"
+                      }
+                    ],
+                    "table": {
+                      "name": "products"
+                    },
+                    "primary": "id",
+                    "joins": [],
+                    "wheres": {
+                      "condition": "AND",
+                      "rules": [
+                        {
+                          "id": "products.stock_id",
+                          "field": "products.stock_id",
+                          "type": "string",
+                          "operator": "equal",
+                          "value": "{{stock_id}}",
+                          "data": {
+                            "table": "products",
+                            "column": "stock_id",
+                            "type": "text",
+                            "columnObj": {
+                              "type": "string",
+                              "maxLength": 255,
+                              "primary": false,
+                              "unique": false,
+                              "nullable": true,
+                              "name": "stock_id"
+                            }
+                          },
+                          "operation": "="
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    },
+                    "query": "SELECT amount\nFROM products\nWHERE stock_id = :P1 /* {{stock_id}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{stock_id}}"
+                      }
+                    ]
+                  }
+                },
+                "output": false,
+                "meta": [
+                  {
+                    "type": "number",
+                    "name": "amount"
+                  }
+                ],
+                "outputType": "object"
+              },
+              {
+                "name": "increment_total_amount",
+                "module": "core",
+                "action": "setvalue",
+                "options": {
+                  "key": "total_amount",
+                  "value": "{{(total_amount.toNumber()+(product.amount * quantity))}}"
+                },
+                "meta": [],
+                "outputType": "number"
+              }
+            ]
+          }
+        },
+        "output": false,
+        "meta": [
+          {
+            "name": "$index",
+            "type": "number"
+          },
+          {
+            "name": "$number",
+            "type": "number"
+          },
+          {
+            "name": "$name",
+            "type": "text"
+          },
+          {
+            "name": "$value",
+            "type": "object"
+          },
+          {
+            "name": "stock_id",
+            "type": "text"
+          },
+          {
+            "name": "quantity",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "name": "amount_to_bill",
+        "module": "core",
+        "action": "setvalue",
+        "options": {
+          "value": "{{total_amount}}"
+        },
+        "meta": [],
+        "outputType": "number",
+        "output": false
       },
       {
         "name": "",
