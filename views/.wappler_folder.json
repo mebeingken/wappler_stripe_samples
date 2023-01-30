@@ -2,9 +2,5 @@
   "thankyou.ejs": {
     "layoutPage": "main",
     "description": ""
-  },
-  "checkout.ejs": {
-    "layoutPage": "main",
-    "description": ""
   }
 }

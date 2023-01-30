@@ -15,15 +15,11 @@
     <link rel="stylesheet" href="/bootstrap/5/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/dmxAppConnect/dmxNotifications/dmxNotifications.css" />
     <script src="/dmxAppConnect/dmxNotifications/dmxNotifications.js" defer=""></script>
-    <script src="/dmxAppConnect/dmxDatastore/dmxDatastore.js" defer=""></script>
-    <script src="/dmxAppConnect/dmxFormatter/dmxFormatter.js" defer=""></script>
-    <script src="/dmxAppConnect/dmxDataTraversal/dmxDataTraversal.js" defer=""></script>
+    <link rel="stylesheet" href="https://js.stripe.com/v3/" defer />
 </head>
 
 <body is="dmx-app" id="main">
-    <dmx-datastore id="cart" session="true"></dmx-datastore>
-    <dmx-data-detail id="data_detail1" dmx-bind:data="cart.data" key="sku"></dmx-data-detail>
-    <div is="dmx-view" id="content">
+    <div is="dmx-view" id="content" dmx-class:classtoggle="loading">
         <%- await include(content, locals); %>
     </div>
     <script src="/bootstrap/5/js/bootstrap.bundle.min.js"></script>

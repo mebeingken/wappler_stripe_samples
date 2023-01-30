@@ -1,5 +1,5 @@
 {
-  "debug": true,
+  "debug": false,
   "secret": "nzLV7HO2wLMybWO",
   "stripe": {
     "secretKey": "sk_test_kWNwcJWHAakLTlVHThkM3zSf"
