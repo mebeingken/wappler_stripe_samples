@@ -1,0 +1,140 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "products",
+      "module": "dbconnector",
+      "action": "select",
+      "options": {
+        "connection": "db",
+        "sql": {
+          "type": "SELECT",
+          "columns": [
+            {
+              "table": "products",
+              "column": "product_id"
+            },
+            {
+              "table": "products",
+              "column": "stripe_id"
+            },
+            {
+              "table": "products",
+              "column": "stripe_active"
+            },
+            {
+              "table": "products",
+              "column": "stripe_name"
+            },
+            {
+              "table": "products",
+              "column": "stripe_description"
+            }
+          ],
+          "table": {
+            "name": "products"
+          },
+          "joins": [],
+          "query": "SELECT product_id, stripe_id, stripe_active, stripe_name, stripe_description\nFROM products",
+          "params": [],
+          "orders": [],
+          "primary": "product_id",
+          "sub": {
+            "prices": {
+              "table": {
+                "name": "prices",
+                "alias": "prices"
+              },
+              "key": "product_id"
+            }
+          }
+        }
+      },
+      "output": true,
+      "meta": [
+        {
+          "type": "number",
+          "name": "product_id"
+        },
+        {
+          "type": "text",
+          "name": "stripe_id"
+        },
+        {
+          "type": "boolean",
+          "name": "stripe_active"
+        },
+        {
+          "type": "text",
+          "name": "stripe_name"
+        },
+        {
+          "type": "text",
+          "name": "stripe_description"
+        },
+        {
+          "name": "prices",
+          "type": "array",
+          "sub": [
+            {
+              "type": "number",
+              "name": "price_id"
+            },
+            {
+              "type": "text",
+              "name": "stripe_id"
+            },
+            {
+              "type": "text",
+              "name": "stripe_active"
+            },
+            {
+              "type": "text",
+              "name": "stripe_currency"
+            },
+            {
+              "type": "text",
+              "name": "stripe_product_id"
+            },
+            {
+              "type": "number",
+              "name": "product_id"
+            },
+            {
+              "type": "text",
+              "name": "stripe_interval"
+            },
+            {
+              "type": "number",
+              "name": "stripe_interval_count"
+            },
+            {
+              "type": "text",
+              "name": "stripe_type"
+            },
+            {
+              "type": "number",
+              "name": "stripe_unit_amount"
+            },
+            {
+              "type": "number",
+              "name": "unit_amount"
+            }
+          ]
+        }
+      ],
+      "outputType": "array"
+    }
+  }
+}

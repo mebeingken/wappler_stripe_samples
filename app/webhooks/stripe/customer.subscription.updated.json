@@ -1,0 +1,165 @@
+{
+  "meta": {
+    "$_POST": [
+      {
+        "type": "object",
+        "name": "data",
+        "sub": [
+          {
+            "type": "object",
+            "ref": "stripe_subscription",
+            "name": "object"
+          }
+        ]
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "this_tenant",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "tenants",
+                "column": "stripe_subscription_id"
+              },
+              {
+                "table": "tenants",
+                "column": "stripe_subscription_status"
+              },
+              {
+                "table": "tenants",
+                "column": "tenant_id"
+              }
+            ],
+            "table": {
+              "name": "tenants"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "tenants.stripe_customer_id",
+                  "field": "tenants.stripe_customer_id",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{$_POST.data.object.customer}}",
+                  "data": {
+                    "table": "tenants",
+                    "column": "stripe_customer_id",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT stripe_subscription_id, stripe_subscription_status, tenant_id\nFROM tenants\nWHERE stripe_customer_id = :P1 /* {{$_POST.data.object.customer}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.data.object.customer}}"
+              }
+            ],
+            "primary": "tenant_id"
+          }
+        },
+        "meta": [
+          {
+            "type": "text",
+            "name": "stripe_subscription_id"
+          },
+          {
+            "type": "text",
+            "name": "stripe_subscription_status"
+          },
+          {
+            "type": "number",
+            "name": "tenant_id"
+          }
+        ],
+        "outputType": "object"
+      },
+      {
+        "name": "",
+        "module": "core",
+        "action": "condition",
+        "options": {
+          "if": "{{$_POST.data.object.id==this_tenant.stripe_subscription_id}}",
+          "then": {
+            "steps": {
+              "name": "update_tenant",
+              "module": "dbupdater",
+              "action": "update",
+              "options": {
+                "connection": "db",
+                "sql": {
+                  "type": "update",
+                  "values": [
+                    {
+                      "table": "tenants",
+                      "column": "stripe_subscription_status",
+                      "type": "text",
+                      "value": "{{$_POST.data.object.status}}"
+                    }
+                  ],
+                  "table": "tenants",
+                  "wheres": {
+                    "condition": "AND",
+                    "rules": [
+                      {
+                        "id": "subscription_id",
+                        "field": "subscription_id",
+                        "type": "string",
+                        "operator": "equal",
+                        "value": "{{$_POST.data.object.id}}",
+                        "data": {
+                          "column": "subscription_id"
+                        },
+                        "operation": "="
+                      }
+                    ],
+                    "conditional": null,
+                    "valid": true
+                  },
+                  "query": "UPDATE tenants\nSET stripe_subscription_status = :P1 /* {{$_POST.data.object.status}} */\nWHERE subscription_id = :P2 /* {{$_POST.data.object.id}} */",
+                  "params": [
+                    {
+                      "name": ":P1",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.status}}"
+                    },
+                    {
+                      "operator": "equal",
+                      "type": "expression",
+                      "name": ":P2",
+                      "value": "{{$_POST.data.object.id}}"
+                    }
+                  ],
+                  "returning": "tenant_id"
+                }
+              },
+              "meta": [
+                {
+                  "name": "affected",
+                  "type": "number"
+                }
+              ]
+            }
+          }
+        },
+        "outputType": "boolean"
+      }
+    ]
+  }
+}

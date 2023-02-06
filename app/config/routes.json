@@ -4,12 +4,21 @@
       "path": "/",
       "page": "index",
       "routeType": "page",
-      "layout": "main"
+      "layout": "main",
+      "exec": ""
     },
     {
       "path": "/thankyou",
       "page": "thankyou",
       "layout": "main"
+    },
+    {
+      "path": "/subscription",
+      "page": "subscription",
+      "layout": "main"
     }
-  ]
+  ],
+  "layouts": {
+    "main": {}
+  }
 }

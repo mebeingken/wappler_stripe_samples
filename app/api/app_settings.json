@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "app_settings",
+      "module": "dbconnector",
+      "action": "select",
+      "options": {
+        "connection": "db",
+        "sql": {
+          "type": "SELECT",
+          "columns": [
+            {
+              "table": "app_settings",
+              "column": "app_key"
+            },
+            {
+              "table": "app_settings",
+              "column": "app_value"
+            }
+          ],
+          "params": [],
+          "table": {
+            "name": "app_settings"
+          },
+          "primary": "app_setting_id",
+          "joins": [],
+          "query": "SELECT app_key, app_value\nFROM app_settings"
+        }
+      },
+      "output": true,
+      "meta": [
+        {
+          "type": "text",
+          "name": "app_key"
+        },
+        {
+          "type": "text",
+          "name": "app_value"
+        }
+      ],
+      "outputType": "array"
+    }
+  }
+}

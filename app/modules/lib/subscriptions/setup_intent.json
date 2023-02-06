@@ -1,0 +1,12 @@
+{
+  "name": "",
+  "module": "core",
+  "action": "exec",
+  "options": {
+    "exec": "stripe/setup_intent",
+    "params": {
+      "tenant_id": 1
+    }
+  },
+  "output": true
+}

@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "$_POST": [
+      {
+        "type": "object",
+        "name": "data",
+        "sub": [
+          {
+            "type": "object",
+            "ref": "stripe_payment_method",
+            "name": "object"
+          }
+        ]
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "update_tenant",
+      "module": "dbupdater",
+      "action": "update",
+      "options": {
+        "connection": "db",
+        "sql": {
+          "type": "update",
+          "values": [
+            {
+              "table": "tenants",
+              "column": "stripe_payment_id",
+              "type": "text",
+              "value": "{{null}}"
+            }
+          ],
+          "table": "tenants",
+          "wheres": {
+            "condition": "AND",
+            "rules": [
+              {
+                "id": "stripe_customer_id",
+                "field": "stripe_customer_id",
+                "type": "string",
+                "operator": "equal",
+                "value": "{{$_POST.data.object.customer}}",
+                "data": {
+                  "column": "stripe_customer_id"
+                },
+                "operation": "="
+              }
+            ],
+            "conditional": null,
+            "valid": true
+          },
+          "query": "UPDATE tenants\nSET stripe_payment_id = :P1 /* {{null}} */\nWHERE stripe_customer_id = :P2 /* {{$_POST.data.object.customer}} */",
+          "params": [
+            {
+              "name": ":P1",
+              "type": "expression",
+              "value": "{{null}}"
+            },
+            {
+              "operator": "equal",
+              "type": "expression",
+              "name": ":P2",
+              "value": "{{$_POST.data.object.customer}}"
+            }
+          ]
+        }
+      },
+      "meta": [
+        {
+          "name": "affected",
+          "type": "number"
+        }
+      ]
+    }
+  }
+}
