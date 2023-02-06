@@ -1,0 +1,25 @@
+[
+  {
+    "name": "setup_intent",
+    "module": "core",
+    "action": "exec",
+    "options": {
+      "exec": "stripe/setup_intent",
+      "params": {
+        "tenant_id": 1
+      }
+    },
+    "output": false
+  },
+  {
+    "name": "client_secret",
+    "module": "core",
+    "action": "setvalue",
+    "options": {
+      "value": "{{setup_intent.client_secret}}"
+    },
+    "meta": [],
+    "outputType": "text",
+    "output": true
+  }
+]

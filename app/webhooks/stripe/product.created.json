@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "$_POST": [
+      {
+        "type": "object",
+        "name": "data",
+        "sub": [
+          {
+            "type": "object",
+            "ref": "stripe_product",
+            "name": "object"
+          }
+        ]
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "insert_product",
+      "module": "dbupdater",
+      "action": "insert",
+      "options": {
+        "connection": "db",
+        "sql": {
+          "type": "insert",
+          "values": [
+            {
+              "table": "products",
+              "column": "stripe_id",
+              "type": "text",
+              "value": "{{$_POST.data.object.id}}"
+            },
+            {
+              "table": "products",
+              "column": "stripe_active",
+              "type": "boolean",
+              "value": "{{$_POST.data.object.active}}"
+            },
+            {
+              "table": "products",
+              "column": "stripe_name",
+              "type": "text",
+              "value": "{{$_POST.data.object.name}}"
+            },
+            {
+              "table": "products",
+              "column": "stripe_description",
+              "type": "text",
+              "value": "{{$_POST.data.object.description}}"
+            }
+          ],
+          "table": "products",
+          "returning": "product_id",
+          "query": "INSERT INTO products\n(stripe_id, stripe_active, stripe_name, stripe_description) VALUES (:P1 /* {{$_POST.data.object.id}} */, :P2 /* {{$_POST.data.object.active}} */, :P3 /* {{$_POST.data.object.name}} */, :P4 /* {{$_POST.data.object.description}} */)",
+          "params": [
+            {
+              "name": ":P1",
+              "type": "expression",
+              "value": "{{$_POST.data.object.id}}"
+            },
+            {
+              "name": ":P2",
+              "type": "expression",
+              "value": "{{$_POST.data.object.active}}"
+            },
+            {
+              "name": ":P3",
+              "type": "expression",
+              "value": "{{$_POST.data.object.name}}"
+            },
+            {
+              "name": ":P4",
+              "type": "expression",
+              "value": "{{$_POST.data.object.description}}"
+            }
+          ]
+        }
+      },
+      "meta": [
+        {
+          "name": "identity",
+          "type": "text"
+        },
+        {
+          "name": "affected",
+          "type": "number"
+        }
+      ]
+    }
+  }
+}

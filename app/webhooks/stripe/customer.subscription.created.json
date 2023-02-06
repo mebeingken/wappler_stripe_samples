@@ -1,0 +1,165 @@
+{
+  "meta": {
+    "$_POST": [
+      {
+        "type": "object",
+        "name": "data",
+        "sub": [
+          {
+            "type": "object",
+            "ref": "stripe_subscription",
+            "name": "object"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "name": "subscription_status"
+      },
+      {
+        "type": "text",
+        "name": "subscription_id"
+      },
+      {
+        "type": "text",
+        "name": "stripe_customer_id"
+      },
+      {
+        "type": "datetime",
+        "name": "trial_end_ts"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "update_tenant",
+        "module": "dbupdater",
+        "action": "update",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "update",
+            "values": [
+              {
+                "table": "tenants",
+                "column": "stripe_subscription_status",
+                "type": "text",
+                "value": "{{$_POST.data.object.status}}"
+              },
+              {
+                "table": "tenants",
+                "column": "stripe_subscription_id",
+                "type": "text",
+                "value": "{{$_POST.data.object.id}}"
+              }
+            ],
+            "table": "tenants",
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "stripe_customer_id",
+                  "field": "stripe_customer_id",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{$_POST.data.object.customer}}",
+                  "data": {
+                    "column": "stripe_customer_id"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "UPDATE tenants\nSET stripe_subscription_status = :P1 /* {{$_POST.data.object.status}} */, stripe_subscription_id = :P2 /* {{$_POST.data.object.id}} */\nWHERE stripe_customer_id = :P3 /* {{$_POST.data.object.customer}} */",
+            "params": [
+              {
+                "name": ":P1",
+                "type": "expression",
+                "value": "{{$_POST.data.object.status}}"
+              },
+              {
+                "name": ":P2",
+                "type": "expression",
+                "value": "{{$_POST.data.object.id}}"
+              },
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P3",
+                "value": "{{$_POST.data.object.customer}}"
+              }
+            ],
+            "returning": "tenant_id"
+          }
+        },
+        "meta": [
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "this_tenant",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "tenants",
+                "column": "tenant_id"
+              }
+            ],
+            "table": {
+              "name": "tenants"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "tenants.stripe_customer_id",
+                  "field": "tenants.stripe_customer_id",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{$_POST.data.object.customer}}",
+                  "data": {
+                    "table": "tenants",
+                    "column": "stripe_customer_id",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT tenant_id\nFROM tenants\nWHERE stripe_customer_id = :P1 /* {{$_POST.data.object.customer}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.data.object.customer}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "type": "number",
+            "name": "tenant_id"
+          }
+        ],
+        "outputType": "object",
+        "output": true
+      }
+    ]
+  }
+}

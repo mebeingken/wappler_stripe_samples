@@ -1,0 +1,53 @@
+<!-- Wappler include head-page="layouts/main" fontawesome_5="cdn" bootstrap5="local" is="dmx-app" id="subscription" appConnect="local" components="{dmxStripe:{},dmxDataTraversal:{},dmxBootbox5:{},dmxFormatter:{},dmxNotifications:{}}" -->
+<dmx-notifications id="notifies1"></dmx-notifications>
+
+<dmx-toggle id="stripe_transaction_in_progress"></dmx-toggle>
+<meta name="ac:route" content="/subscription">
+
+<dmx-stripe id="stripe1" dmx-bind:line-items="selected_price.data" checkout="server" setup-url="/api/subscriptions/setup_intent" dmx-on:setup_created="stripecard1.confirmSetup()" dmx-bind:key="app_settings.data.app_settings.where(`app_key`, 'stripe_publishable_key', '==')[0].app_value">
+
+</dmx-stripe>
+
+<dmx-serverconnect id="app_settings" url="/api/app_settings"></dmx-serverconnect>
+<dmx-serverconnect id="fetch_products" url="/api/subscriptions/fetch_products"></dmx-serverconnect>
+<dmx-serverconnect id="set_subscription" url="/api/subscriptions/set_subscription" noload dmx-on:success="stripe_transaction_in_progress.uncheck();notifies1.success('Subscription created')"></dmx-serverconnect>
+<dmx-data-detail id="selected_product" dmx-bind:data="fetch_products.data.products" key="product_id"></dmx-data-detail>
+<dmx-data-detail id="selected_price" dmx-bind:data="selected_product.data.prices" key="price_id">
+
+</dmx-data-detail>
+
+
+<div class="container mt-5" id="choose_subscription">
+    <div class="row">
+        <div class="col">
+            <h1>Subscribe</h1>
+            <p>Purchase a recurring subscription</p>
+
+        </div>
+    </div>
+    <div class="row" is="dmx-repeat" id="each_product" dmx-bind:repeat="fetch_products.data.products" key="product_id">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title" dmx-text="stripe_name">Card title</h4>
+                    <p class="card-text" dmx-text="stripe_description">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <select id="select_price" class="form-select" dmx-bind:options="prices" optiontext="stripe_interval_count+' '+stripe_interval+' - $'+unit_amount" optionvalue="price_id" dmx-on:changed="run([{run:{action:`selected_product.select(product_id)`}},{wait:{delay:1000,disabled:true}},{run:{action:`selected_price.select(value.toNumber())`}}])">
+                        <option value="">Select price</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-5 row-cols-1">
+        <div class="col">
+            <dmx-stripe-card id="stripecard1" dmx-on:setup_confirmed="run({run:{action:`set_subscription.load({stripe_payment_id: stripecard1.setupIntent.payment_method, price_id: selected_price.data.price_id})`}})"></dmx-stripe-card>
+            <div class="mb-3">
+            </div>
+        </div>
+        <div class="col">
+            <button id="btn1" class="btn btn-primary" dmx-on:click="run({condition:{if:`selected_price.data`,then:{steps:{run:{action:`stripe1.createSetup();stripe_transaction_in_progress.check()`}}},else:{steps:{'bootbox.alert':{message:'Select a price'}}}}})">
+
+                Subscribe <span class="spinner-border spinner-border-sm" role="status" dmx-show="stripe_transaction_in_progress.checked"></span></button>
+        </div>
+    </div>
+</div>

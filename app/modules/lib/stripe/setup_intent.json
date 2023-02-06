@@ -1,0 +1,308 @@
+{
+  "meta": {
+    "$_PARAM": [
+      {
+        "type": "number",
+        "name": "tenant_id"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "tenant",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "tenants",
+                "column": "stripe_customer_id"
+              }
+            ],
+            "table": {
+              "name": "tenants"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "tenants.tenant_id",
+                  "field": "tenants.tenant_id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_PARAM.tenant_id}}",
+                  "data": {
+                    "table": "tenants",
+                    "column": "tenant_id",
+                    "type": "number",
+                    "columnObj": {
+                      "type": "increments",
+                      "primary": true,
+                      "unique": false,
+                      "nullable": false,
+                      "name": "tenant_id"
+                    }
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT stripe_customer_id\nFROM tenants\nWHERE tenant_id = :P1 /* {{$_PARAM.tenant_id}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_PARAM.tenant_id}}",
+                "test": ""
+              }
+            ],
+            "primary": "tenant_id"
+          }
+        },
+        "meta": [
+          {
+            "type": "text",
+            "name": "stripe_customer_id"
+          }
+        ],
+        "outputType": "object"
+      },
+      {
+        "name": "",
+        "module": "core",
+        "action": "condition",
+        "options": {
+          "if": "{{!tenant.stripe_customer_id}}",
+          "then": {
+            "steps": [
+              {
+                "name": "",
+                "module": "core",
+                "action": "exec",
+                "options": {
+                  "exec": "stripe/init_customer",
+                  "params": {
+                    "tenant_id": "{{$_PARAM.tenant_id}}"
+                  }
+                },
+                "output": true
+              },
+              {
+                "name": "tenant",
+                "module": "dbconnector",
+                "action": "single",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "tenants",
+                        "column": "stripe_customer_id"
+                      }
+                    ],
+                    "table": {
+                      "name": "tenants"
+                    },
+                    "joins": [],
+                    "wheres": {
+                      "condition": "AND",
+                      "rules": [
+                        {
+                          "id": "tenants.tenant_id",
+                          "field": "tenants.tenant_id",
+                          "type": "double",
+                          "operator": "equal",
+                          "value": "{{$_PARAM.tenant_id}}",
+                          "data": {
+                            "table": "tenants",
+                            "column": "tenant_id",
+                            "type": "number",
+                            "columnObj": {
+                              "type": "increments",
+                              "primary": true,
+                              "unique": false,
+                              "nullable": false,
+                              "name": "tenant_id"
+                            }
+                          },
+                          "operation": "="
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    },
+                    "query": "SELECT stripe_customer_id\nFROM tenants\nWHERE tenant_id = :P1 /* {{$_PARAM.tenant_id}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{$_PARAM.tenant_id}}",
+                        "test": ""
+                      }
+                    ],
+                    "primary": "tenant_id"
+                  }
+                },
+                "meta": [
+                  {
+                    "type": "text",
+                    "name": "stripe_customer_id"
+                  }
+                ],
+                "outputType": "object"
+              }
+            ]
+          }
+        },
+        "outputType": "boolean"
+      },
+      {
+        "name": "createSetupIntent",
+        "module": "stripe",
+        "action": "createSetupIntent",
+        "options": {
+          "payment_method_types": [
+            "card"
+          ],
+          "customer": "{{tenant.stripe_customer_id}}",
+          "usage": "off_session"
+        },
+        "outputType": "object",
+        "meta": [
+          {
+            "name": "application",
+            "type": "text",
+            "expand": [
+              "stripe_application"
+            ]
+          },
+          {
+            "name": "cancellation_reason",
+            "type": "text"
+          },
+          {
+            "name": "client_secret",
+            "type": "text"
+          },
+          {
+            "name": "created",
+            "type": "number"
+          },
+          {
+            "name": "customer",
+            "type": "text",
+            "expand": [
+              "stripe_customer",
+              "stripe_deleted_customer"
+            ]
+          },
+          {
+            "name": "description",
+            "type": "text"
+          },
+          {
+            "name": "id",
+            "type": "text"
+          },
+          {
+            "name": "last_setup_error",
+            "type": "object",
+            "ref": "stripe_api_errors"
+          },
+          {
+            "name": "latest_attempt",
+            "type": "text",
+            "expand": [
+              "stripe_setup_attempt"
+            ]
+          },
+          {
+            "name": "livemode",
+            "type": "boolean"
+          },
+          {
+            "name": "mandate",
+            "type": "text",
+            "expand": [
+              "stripe_mandate"
+            ]
+          },
+          {
+            "name": "metadata",
+            "type": "object"
+          },
+          {
+            "name": "next_action",
+            "type": "object",
+            "ref": "stripe_setup_intent_next_action"
+          },
+          {
+            "name": "object",
+            "type": "text"
+          },
+          {
+            "name": "on_behalf_of",
+            "type": "text",
+            "expand": [
+              "stripe_account"
+            ]
+          },
+          {
+            "name": "payment_method",
+            "type": "text",
+            "expand": [
+              "stripe_payment_method"
+            ]
+          },
+          {
+            "name": "payment_method_options",
+            "type": "object",
+            "ref": "stripe_setup_intent_payment_method_options"
+          },
+          {
+            "name": "payment_method_types",
+            "type": "array",
+            "sub": []
+          },
+          {
+            "name": "single_use_mandate",
+            "type": "text",
+            "expand": [
+              "stripe_mandate"
+            ]
+          },
+          {
+            "name": "status",
+            "type": "text"
+          },
+          {
+            "name": "usage",
+            "type": "text"
+          }
+        ],
+        "output": false
+      },
+      {
+        "name": "client_secret",
+        "module": "core",
+        "action": "setvalue",
+        "options": {
+          "value": "{{createSetupIntent.client_secret}}"
+        },
+        "output": true,
+        "meta": [],
+        "outputType": "text"
+      }
+    ]
+  }
+}

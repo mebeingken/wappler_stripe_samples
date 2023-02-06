@@ -1,7 +1,8 @@
 {
-  "debug": false,
+  "debug": true,
   "secret": "nzLV7HO2wLMybWO",
   "stripe": {
-    "secretKey": "sk_test_kWNwcJWHAakLTlVHThkM3zSf"
+    "secretKey": "YOUR-KEY-HERE",
+    "endpointSecret": "YOUR-ENDPOINT-SECRET"
   }
 }

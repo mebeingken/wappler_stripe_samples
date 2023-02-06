@@ -1,0 +1,463 @@
+{
+  "meta": {
+    "$_POST": [
+      {
+        "type": "object",
+        "name": "data",
+        "sub": [
+          {
+            "type": "object",
+            "ref": "stripe_price",
+            "name": "object"
+          }
+        ]
+      },
+      {
+        "type": "number",
+        "name": "product_id"
+      },
+      {
+        "type": "text",
+        "name": "stripe_interval"
+      },
+      {
+        "type": "number",
+        "name": "stripe_interval_count"
+      },
+      {
+        "type": "text",
+        "name": "stripe_type"
+      },
+      {
+        "type": "number",
+        "name": "stripe_unit_amount"
+      },
+      {
+        "type": "number",
+        "name": "unit_amount"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "product",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "products",
+                "column": "product_id"
+              }
+            ],
+            "table": {
+              "name": "products"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "products.stripe_id",
+                  "field": "products.stripe_id",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{$_POST.data.object.product}}",
+                  "data": {
+                    "table": "products",
+                    "column": "stripe_id",
+                    "type": "text"
+                  },
+                  "operation": "=",
+                  "table": "products"
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT product_id\nFROM products\nWHERE stripe_id = :P1 /* {{$_POST.data.object.product}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.data.object.product}}"
+              }
+            ],
+            "primary": "product_id"
+          }
+        },
+        "meta": [
+          {
+            "type": "number",
+            "name": "product_id"
+          }
+        ],
+        "outputType": "object"
+      },
+      {
+        "name": "query_price",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "prices",
+                "column": "price_id"
+              }
+            ],
+            "table": {
+              "name": "prices"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "prices.stripe_id",
+                  "field": "prices.stripe_id",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{$_POST.data.object.id}}",
+                  "data": {
+                    "table": "prices",
+                    "column": "stripe_id",
+                    "type": "text"
+                  },
+                  "operation": "=",
+                  "table": "prices"
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT price_id\nFROM prices\nWHERE stripe_id = :P1 /* {{$_POST.data.object.id}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.data.object.id}}"
+              }
+            ],
+            "primary": "price_id"
+          }
+        },
+        "meta": [
+          {
+            "type": "number",
+            "name": "price_id"
+          }
+        ],
+        "outputType": "object"
+      },
+      {
+        "name": "",
+        "module": "core",
+        "action": "condition",
+        "options": {
+          "if": "{{query_price.price_id}}",
+          "then": {
+            "steps": {
+              "name": "update_price",
+              "module": "dbupdater",
+              "action": "update",
+              "options": {
+                "connection": "db",
+                "sql": {
+                  "type": "update",
+                  "values": [
+                    {
+                      "table": "prices",
+                      "column": "stripe_active",
+                      "type": "boolean",
+                      "value": "{{$_POST.data.object.active}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_currency",
+                      "type": "text",
+                      "value": "{{$_POST.data.object.currency}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_product_id",
+                      "type": "text",
+                      "value": "{{$_POST.data.object.product}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "product_id",
+                      "type": "number",
+                      "value": "{{product.product_id}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_interval",
+                      "type": "text",
+                      "value": "{{$_POST.data.object.recurring.interval}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_interval_count",
+                      "type": "number",
+                      "value": "{{$_POST.data.object.recurring.interval_count}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_type",
+                      "type": "text",
+                      "value": "{{$_POST.data.object.type}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_unit_amount",
+                      "type": "number",
+                      "value": "{{$_POST.data.object.unit_amount}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "unit_amount",
+                      "type": "number",
+                      "value": "{{$_POST.data.object.unit_amount/100}}"
+                    }
+                  ],
+                  "table": "prices",
+                  "wheres": {
+                    "condition": "AND",
+                    "rules": [
+                      {
+                        "id": "stripe_id",
+                        "field": "stripe_id",
+                        "type": "string",
+                        "operator": "equal",
+                        "value": "{{$_POST.data.object.id}}",
+                        "data": {
+                          "column": "stripe_id"
+                        },
+                        "operation": "="
+                      }
+                    ],
+                    "conditional": "{{$_POST.data.object.id}}",
+                    "valid": true
+                  },
+                  "query": "UPDATE prices\nSET stripe_active = :P1 /* {{$_POST.data.object.active}} */, stripe_currency = :P2 /* {{$_POST.data.object.currency}} */, stripe_product_id = :P3 /* {{$_POST.data.object.product}} */, product_id = :P4 /* {{product.product_id}} */, stripe_interval = :P5 /* {{$_POST.data.object.recurring.interval}} */, stripe_interval_count = :P6 /* {{$_POST.data.object.recurring.interval_count}} */, stripe_type = :P7 /* {{$_POST.data.object.type}} */, stripe_unit_amount = :P8 /* {{$_POST.data.object.unit_amount}} */, unit_amount = :P9 /* {{$_POST.data.object.unit_amount/100}} */\nWHERE stripe_id = :P10 /* {{$_POST.data.object.id}} */",
+                  "params": [
+                    {
+                      "name": ":P1",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.active}}"
+                    },
+                    {
+                      "name": ":P2",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.currency}}"
+                    },
+                    {
+                      "name": ":P3",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.product}}"
+                    },
+                    {
+                      "name": ":P4",
+                      "type": "expression",
+                      "value": "{{product.product_id}}"
+                    },
+                    {
+                      "name": ":P5",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.recurring.interval}}"
+                    },
+                    {
+                      "name": ":P6",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.recurring.interval_count}}"
+                    },
+                    {
+                      "name": ":P7",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.type}}"
+                    },
+                    {
+                      "name": ":P8",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.unit_amount}}"
+                    },
+                    {
+                      "name": ":P9",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.unit_amount/100}}"
+                    },
+                    {
+                      "operator": "equal",
+                      "type": "expression",
+                      "name": ":P10",
+                      "value": "{{$_POST.data.object.id}}",
+                      "test": ""
+                    }
+                  ],
+                  "returning": "price_id"
+                }
+              },
+              "meta": [
+                {
+                  "name": "affected",
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "else": {
+            "steps": {
+              "name": "insert_price",
+              "module": "dbupdater",
+              "action": "insert",
+              "options": {
+                "connection": "db",
+                "sql": {
+                  "type": "insert",
+                  "values": [
+                    {
+                      "table": "prices",
+                      "column": "stripe_id",
+                      "type": "text",
+                      "value": "{{$_POST.data.object.id}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_active",
+                      "type": "boolean",
+                      "value": "{{$_POST.data.object.active}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_currency",
+                      "type": "text",
+                      "value": "{{$_POST.data.object.currency}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_product_id",
+                      "type": "text",
+                      "value": "{{$_POST.data.object.product}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "product_id",
+                      "type": "number",
+                      "value": "{{product.product_id}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_interval",
+                      "type": "text",
+                      "value": "{{$_POST.data.object.recurring.interval}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_interval_count",
+                      "type": "number",
+                      "value": "{{$_POST.data.object.recurring.interval_count}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_type",
+                      "type": "text",
+                      "value": "{{$_POST.data.object.type}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "stripe_unit_amount",
+                      "type": "number",
+                      "value": "{{$_POST.data.object.unit_amount}}"
+                    },
+                    {
+                      "table": "prices",
+                      "column": "unit_amount",
+                      "type": "number",
+                      "value": "{{$_POST.data.object.unit_amount/100}}"
+                    }
+                  ],
+                  "table": "prices",
+                  "returning": "price_id",
+                  "query": "INSERT INTO prices\n(stripe_id, stripe_active, stripe_currency, stripe_product_id, product_id, stripe_interval, stripe_interval_count, stripe_type, stripe_unit_amount, unit_amount) VALUES (:P1 /* {{$_POST.data.object.id}} */, :P2 /* {{$_POST.data.object.active}} */, :P3 /* {{$_POST.data.object.currency}} */, :P4 /* {{$_POST.data.object.product}} */, :P5 /* {{product.product_id}} */, :P6 /* {{$_POST.data.object.recurring.interval}} */, :P7 /* {{$_POST.data.object.recurring.interval_count}} */, :P8 /* {{$_POST.data.object.type}} */, :P9 /* {{$_POST.data.object.unit_amount}} */, :P10 /* {{$_POST.data.object.unit_amount/100}} */)",
+                  "params": [
+                    {
+                      "name": ":P1",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.id}}"
+                    },
+                    {
+                      "name": ":P2",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.active}}"
+                    },
+                    {
+                      "name": ":P3",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.currency}}"
+                    },
+                    {
+                      "name": ":P4",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.product}}"
+                    },
+                    {
+                      "name": ":P5",
+                      "type": "expression",
+                      "value": "{{product.product_id}}"
+                    },
+                    {
+                      "name": ":P6",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.recurring.interval}}"
+                    },
+                    {
+                      "name": ":P7",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.recurring.interval_count}}"
+                    },
+                    {
+                      "name": ":P8",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.type}}"
+                    },
+                    {
+                      "name": ":P9",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.unit_amount}}"
+                    },
+                    {
+                      "name": ":P10",
+                      "type": "expression",
+                      "value": "{{$_POST.data.object.unit_amount/100}}",
+                      "test": ""
+                    }
+                  ]
+                }
+              },
+              "meta": [
+                {
+                  "name": "identity",
+                  "type": "text"
+                },
+                {
+                  "name": "affected",
+                  "type": "number"
+                }
+              ]
+            }
+          }
+        },
+        "outputType": "boolean"
+      }
+    ]
+  }
+}

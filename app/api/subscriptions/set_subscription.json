@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "stripe_payment_id"
+      },
+      {
+        "type": "number",
+        "name": "price_id"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "",
+      "module": "core",
+      "action": "exec",
+      "options": {
+        "exec": "stripe/init_subscription",
+        "params": {
+          "tenant_id": 1,
+          "stripe_payment_id": "{{$_GET.stripe_payment_id}}",
+          "price_id": "{{$_GET.price_id}}"
+        }
+      },
+      "output": true
+    }
+  }
+}

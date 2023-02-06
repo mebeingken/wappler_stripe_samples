@@ -1,0 +1,21 @@
+What is a productd:
+
+Products describe the specific goods or services you offer to your customers.
+
+If you’re an e-commerce store selling clothing, one of your products might be a large white t-shirt. In Stripe, you can create a separate product for each size and color combination.
+If you’re a SaaS platform, you might have basic and premium pricing tiers. In this case, both basic and premium are separate products because they typically offer unique attributes or features.
+If you’re a donation platform that accepts donations for several different causes, each cause is a different product.
+
+
+What is a price:
+In Stripe, price objects are more than a numerical amount to pay. Prices include additional information, such as tax behavior, volume tiers, and recurrence intervals for subscriptions. You don’t need to create new prices for each purchase–if you’re selling a product for one price, you only need to create one price. You can also make this price the default price for the product.
+
+Prices can either be one-time or recurring. Subscriptions use recurring prices to charge the customer at an interval, such as “once a month.” If you sell the same service at several different subscription intervals, it’s best to create multiple recurring prices for the same product. Learn more about pricing models.
+
+A single Price can support multiple currencies. For example, if you sell a product in the USA for 10 USD, Europe for 9 EUR, and Japan for 1300 JPY, the same Price object can cover all three currencies. Each purchase uses one of the Price’s supported currencies, depending on how you use the Price in your integration. Learn more about multi-currency Prices.
+
+Because a product can have multiple prices associated with it, you’ll need to specify which price to use when creating Checkout Sessions, Payment Links, Invoices, Quotes, or Subscriptions.
+
+Most prices define a fixed unit_amount, but you can also configure the price to function with different tiers or usage-based models. Learn more about tiered pricing and usage-based pricing.
+
+If you’re using Stripe Tax, you can specify the tax_behavior for the price to determine whether the tax is already included in the amount, or if it needs to be added. Learn more about tax behavior.

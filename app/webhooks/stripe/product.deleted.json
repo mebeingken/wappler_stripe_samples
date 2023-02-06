@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "$_POST": [
+      {
+        "type": "object",
+        "name": "data",
+        "sub": [
+          {
+            "type": "object",
+            "ref": "stripe_product",
+            "name": "object"
+          }
+        ]
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "delete_product",
+      "module": "dbupdater",
+      "action": "delete",
+      "options": {
+        "connection": "db",
+        "sql": {
+          "type": "delete",
+          "table": "products",
+          "wheres": {
+            "condition": "AND",
+            "rules": [
+              {
+                "id": "stripe_id",
+                "field": "stripe_id",
+                "type": "string",
+                "operator": "equal",
+                "value": "{{$_POST.data.object.id}}",
+                "data": {
+                  "column": "stripe_id"
+                },
+                "operation": "="
+              }
+            ],
+            "conditional": "{{$_POST.data.object.id}}",
+            "valid": true
+          },
+          "query": "DELETE\nFROM products\nWHERE stripe_id = :P1 /* {{$_POST.data.object.id}} */",
+          "params": [
+            {
+              "operator": "equal",
+              "type": "expression",
+              "name": ":P1",
+              "value": "{{$_POST.data.object.id}}"
+            }
+          ],
+          "returning": "product_id"
+        }
+      },
+      "meta": [
+        {
+          "name": "affected",
+          "type": "number"
+        }
+      ]
+    }
+  }
+}
